@@ -40,8 +40,8 @@ pub fn dox_derive(input: TokenStream) -> TokenStream {
 
     let field_docs: Vec<_> = fields
         .iter()
-        .filter_map(|field| {
-            let name = field.ident.as_ref()?;
+        .map(|field| {
+            let name = field.ident.as_ref().unwrap();
             let docs = extract_doc_comments(&field.attrs);
             let ty = &field.ty;
             println!(
@@ -52,9 +52,13 @@ pub fn dox_derive(input: TokenStream) -> TokenStream {
             );
             let name_str = name.to_string();
             let type_str = quote!(#ty).to_string();
-            Some(quote! {
-                (#name_str.to_string(), #type_str.to_string(), #docs.to_string())
-            })
+            quote! {
+                libdox::FieldDoc {
+                    name: #name_str.to_string(),
+                    typ: #type_str.to_string(),
+                    doc: #docs.to_string(),
+                }
+            }
         })
         .collect();
 
@@ -62,7 +66,7 @@ pub fn dox_derive(input: TokenStream) -> TokenStream {
 
     let expanded = quote! {
         impl libdox::Dox for #name {
-            fn dox_fields() -> Vec<(String, String, String)> {
+            fn dox_fields() -> Vec<libdox::FieldDoc> {
                 vec![
                     #(#field_docs),*
                 ]
