@@ -1,0 +1,10 @@
+[package]
+name = "libdox"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+dox_derive = { path = "../dox_derive" }
+
+[dev-dependencies]
+dox_derive = { path = "../dox_derive" }

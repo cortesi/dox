@@ -1,0 +1,15 @@
+
+[workspace.package]
+version = "0.0.1"
+edition = "2021"
+authors = ["Aldo Cortesi <aldo@corte.si>"]
+description = "Flexible doc generation for Rust types"
+license = "MIT"
+repository = "https://github.com/cortesi/dox"
+keywords = ["documentation", "docs"]
+
+[workspace]
+resolver = "2"
+members = ["crates/*", "tests"]
+
+
