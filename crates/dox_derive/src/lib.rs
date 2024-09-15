@@ -54,12 +54,19 @@ pub fn dox_derive(input: TokenStream) -> TokenStream {
 
     let field_docs: Vec<_> = fields.iter().map(process_field).collect();
 
+    let struct_docs = extract_doc_comments(&input.attrs);
+    let name_str = name.to_string();
+
     let expanded = quote! {
         impl libdox::Dox for #name {
             fn dox() -> libdox::DocType {
-                libdox::DocType::Container(vec![
-                    #(#field_docs),*
-                ])
+                libdox::DocType::Container(libdox::Container {
+                    name: #name_str.to_string(),
+                    fields: vec![
+                        #(#field_docs),*
+                    ],
+                    doc: #struct_docs.to_string(),
+                })
             }
         }
     };

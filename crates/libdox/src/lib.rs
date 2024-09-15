@@ -8,9 +8,16 @@ pub struct Field {
 }
 
 #[derive(Debug, Clone, PartialEq)]
+pub struct Container {
+    pub name: String,
+    pub fields: Vec<Field>,
+    pub doc: String,
+}
+
+#[derive(Debug, Clone, PartialEq)]
 pub enum DocType {
     Field(Field),
-    Container(Vec<Field>),
+    Container(Container),
 }
 
 pub trait Dox {
@@ -57,11 +64,15 @@ impl Renderer for Text {
     fn render(&self, doc_type: DocType) -> String {
         match doc_type {
             DocType::Field(field) => format!("{} ({}): {}", field.name, field.typ, field.doc),
-            DocType::Container(fields) => fields
-                .into_iter()
-                .map(|field| format!("{} ({}): {}", field.name, field.typ, field.doc))
-                .collect::<Vec<_>>()
-                .join("\n"),
+            DocType::Container(container) => {
+                let fields = container
+                    .fields
+                    .into_iter()
+                    .map(|field| format!("{} ({}): {}", field.name, field.typ, field.doc))
+                    .collect::<Vec<_>>()
+                    .join("\n");
+                format!("{}\n{}", container.doc, fields)
+            }
         }
     }
 }
