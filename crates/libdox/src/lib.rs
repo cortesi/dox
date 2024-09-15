@@ -1,13 +1,13 @@
 pub use dox_derive::Dox;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Field {
     pub name: String,
     pub typ: String,
     pub doc: String,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum DocType {
     Field(Field),
     Container(Vec<Field>),

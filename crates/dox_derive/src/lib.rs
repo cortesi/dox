@@ -1,6 +1,6 @@
 use proc_macro::TokenStream;
 use quote::quote;
-use syn::{parse_macro_input, Attribute, Data, DeriveInput, Fields, FieldsNamed, Type};
+use syn::{parse_macro_input, Attribute, Data, DeriveInput, Fields, FieldsNamed};
 
 fn extract_doc_comments(attrs: &[Attribute]) -> String {
     attrs
