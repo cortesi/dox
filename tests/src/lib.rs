@@ -11,11 +11,11 @@ struct TestStruct {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use libdox::render;
+    use libdox::{render, Text};
 
     #[test]
     fn test_simple_render() {
-        let result = render::<TestStruct>();
+        let result = render::<TestStruct, _>(&Text);
         assert_eq!(result, "test_field (String): This is a test field");
     }
 

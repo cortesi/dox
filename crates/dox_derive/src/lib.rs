@@ -36,20 +36,12 @@ pub fn dox_derive(input: TokenStream) -> TokenStream {
         _ => return TokenStream::new(),
     };
 
-    println!("Number of fields: {}", fields.len());
-
     let field_docs: Vec<_> = fields
         .iter()
         .map(|field| {
             let name = field.ident.as_ref().unwrap();
             let docs = extract_doc_comments(&field.attrs);
             let ty = &field.ty;
-            println!(
-                "Field: {}, Type: {:?}, Docs: {:?}",
-                name,
-                quote!(#ty).to_string(),
-                docs
-            );
             let name_str = name.to_string();
             let type_str = quote!(#ty).to_string();
             quote! {
@@ -62,8 +54,6 @@ pub fn dox_derive(input: TokenStream) -> TokenStream {
         })
         .collect();
 
-    println!("Number of fields: {}", field_docs.len());
-
     let expanded = quote! {
         impl libdox::Dox for #name {
             fn dox_fields() -> Vec<libdox::FieldDoc> {
@@ -73,8 +63,5 @@ pub fn dox_derive(input: TokenStream) -> TokenStream {
             }
         }
     };
-
-    println!("Expanded macro: {}", expanded);
-
     TokenStream::from(expanded)
 }
