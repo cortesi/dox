@@ -17,6 +17,36 @@ pub trait Dox {
     fn dox() -> DocType;
 }
 
+impl<T> Dox for Vec<T> {
+    fn dox() -> DocType {
+        DocType::Field(Field {
+            name: "Vec".to_string(),
+            typ: "Vec<T>".to_string(),
+            doc: "A vector of items".to_string(),
+        })
+    }
+}
+
+macro_rules! impl_dox_for_primitive {
+    ($($t:ty),*) => {
+        $(
+            impl Dox for $t {
+                fn dox() -> DocType {
+                    DocType::Field(Field {
+                        name: stringify!($t).to_string(),
+                        typ: stringify!($t).to_string(),
+                        doc: format!("A {} value", stringify!($t)),
+                    })
+                }
+            }
+        )*
+    }
+}
+
+impl_dox_for_primitive!(
+    i8, i16, i32, i64, i128, u8, u16, u32, u64, u128, f32, f64, bool, char, String
+);
+
 pub trait Renderer {
     fn render(&self, doc_type: DocType) -> String;
 }

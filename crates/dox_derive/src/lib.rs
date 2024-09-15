@@ -1,6 +1,6 @@
 use proc_macro::TokenStream;
 use quote::quote;
-use syn::{parse_macro_input, Attribute, Data, DeriveInput, Fields, FieldsNamed};
+use syn::{parse_macro_input, Attribute, Data, DeriveInput, Fields, FieldsNamed, Type};
 
 fn extract_doc_comments(attrs: &[Attribute]) -> String {
     attrs
@@ -23,6 +23,22 @@ fn extract_doc_comments(attrs: &[Attribute]) -> String {
         .join("\n")
 }
 
+fn process_field(field: &syn::Field) -> proc_macro2::TokenStream {
+    let name = field.ident.as_ref().unwrap();
+    let docs = extract_doc_comments(&field.attrs);
+    let ty = &field.ty;
+    let name_str = name.to_string();
+    let type_str = quote!(#ty).to_string();
+
+    quote! {
+        libdox::Field {
+            name: #name_str.to_string(),
+            typ: #type_str.to_string(),
+            doc: #docs.to_string(),
+        }
+    }
+}
+
 #[proc_macro_derive(Dox)]
 pub fn dox_derive(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
@@ -36,23 +52,7 @@ pub fn dox_derive(input: TokenStream) -> TokenStream {
         _ => return TokenStream::new(),
     };
 
-    let field_docs: Vec<_> = fields
-        .iter()
-        .map(|field| {
-            let name = field.ident.as_ref().unwrap();
-            let docs = extract_doc_comments(&field.attrs);
-            let ty = &field.ty;
-            let name_str = name.to_string();
-            let type_str = quote!(#ty).to_string();
-            quote! {
-                libdox::Field {
-                    name: #name_str.to_string(),
-                    typ: #type_str.to_string(),
-                    doc: #docs.to_string(),
-                }
-            }
-        })
-        .collect();
+    let field_docs: Vec<_> = fields.iter().map(process_field).collect();
 
     let expanded = quote! {
         impl libdox::Dox for #name {
