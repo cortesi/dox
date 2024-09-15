@@ -11,7 +11,7 @@ struct TestStruct {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use libdox::{render, Text};
+    use libdox::{render, DocType, Text};
 
     #[test]
     fn test_simple_render() {
@@ -20,11 +20,14 @@ mod tests {
     }
 
     #[test]
-    fn test_dox_fields() {
-        let fields = TestStruct::dox_fields();
-        assert_eq!(fields.len(), 1);
-        assert_eq!(fields[0].name, "test_field");
-        assert_eq!(fields[0].typ, "String");
-        assert_eq!(fields[0].doc, "This is a test field");
+    fn test_dox() {
+        if let DocType::Container(fields) = TestStruct::dox() {
+            assert_eq!(fields.len(), 1);
+            assert_eq!(fields[0].name, "test_field");
+            assert_eq!(fields[0].typ, "String");
+            assert_eq!(fields[0].doc, "This is a test field");
+        } else {
+            panic!("Expected DocType::Container");
+        }
     }
 }
