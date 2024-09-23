@@ -31,7 +31,7 @@ fn process_field(field: &syn::Field) -> proc_macro2::TokenStream {
     let type_str = quote!(#ty).to_string();
 
     quote! {
-        libdox::Field {
+        libdox::Primitive {
             name: #name_str.to_string(),
             typ: #type_str.to_string(),
             doc: #docs.to_string(),

@@ -23,7 +23,7 @@ struct TestStruct {
 mod tests {
     use super::*;
     use indoc::indoc;
-    use libdox::{render, Container, DocType, Field, Text};
+    use libdox::{render, Container, DocType, Primitive, Text};
     use pretty_assertions::assert_eq;
 
     #[test]
@@ -46,17 +46,17 @@ mod tests {
         let expected = DocType::Container(Container {
             name: "TestStruct".to_string(),
             fields: vec![
-                Field {
+                Primitive {
                     name: "test_field".to_string(),
                     typ: "String".to_string(),
                     doc: "This is a test field".to_string(),
                 },
-                Field {
+                Primitive {
                     name: "nested".to_string(),
                     typ: "InnerStruct".to_string(),
                     doc: "This is a nested struct".to_string(),
                 },
-                Field {
+                Primitive {
                     name: "vec_field".to_string(),
                     typ: "Vec < i32 >".to_string(),
                     doc: "This is a vector of integers".to_string(),

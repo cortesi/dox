@@ -1,7 +1,7 @@
 pub use dox_derive::Dox;
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct Field {
+pub struct Primitive {
     pub name: String,
     pub typ: String,
     pub doc: String,
@@ -10,13 +10,13 @@ pub struct Field {
 #[derive(Debug, Clone, PartialEq)]
 pub struct Container {
     pub name: String,
-    pub fields: Vec<Field>,
+    pub fields: Vec<Primitive>,
     pub doc: String,
 }
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum DocType {
-    Field(Field),
+    Field(Primitive),
     Container(Container),
 }
 
@@ -26,7 +26,7 @@ pub trait Dox {
 
 impl<T> Dox for Vec<T> {
     fn dox() -> DocType {
-        DocType::Field(Field {
+        DocType::Field(Primitive {
             name: "Vec".to_string(),
             typ: "Vec<T>".to_string(),
             doc: "A vector of items".to_string(),
@@ -39,7 +39,7 @@ macro_rules! impl_dox_for_primitive {
         $(
             impl Dox for $t {
                 fn dox() -> DocType {
-                    DocType::Field(Field {
+                    DocType::Field(Primitive {
                         name: stringify!($t).to_string(),
                         typ: stringify!($t).to_string(),
                         doc: format!("A {} value", stringify!($t)),
