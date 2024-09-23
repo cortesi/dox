@@ -31,11 +31,11 @@ fn process_field(field: &syn::Field) -> proc_macro2::TokenStream {
     let type_str = quote!(#ty).to_string();
 
     quote! {
-        libdox::Primitive {
+        libdox::Field::Primitive(libdox::Primitive {
             name: #name_str.to_string(),
             typ: #type_str.to_string(),
             doc: #docs.to_string(),
-        }
+        })
     }
 }
 
@@ -59,8 +59,8 @@ pub fn dox_derive(input: TokenStream) -> TokenStream {
 
     let expanded = quote! {
         impl libdox::Dox for #name {
-            fn dox() -> libdox::DocType {
-                libdox::DocType::Container(libdox::Container {
+            fn dox() -> libdox::Field {
+                libdox::Field::Container(libdox::Container {
                     name: #name_str.to_string(),
                     fields: vec![
                         #(#field_docs),*
