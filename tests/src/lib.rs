@@ -23,6 +23,22 @@ struct TestStruct {
     vector: Vec<i32>,
 }
 
+/// This is a struct with snake_case rename
+#[derive(Dox, Serialize)]
+#[serde(rename_all = "snake_case")]
+struct SnakeCaseStruct {
+    /// This is a camel case field
+    camel_case_field: String,
+}
+
+/// This is a struct with camelCase rename
+#[derive(Dox, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct CamelCaseStruct {
+    /// This is a snake case field
+    snake_case_field: String,
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -60,5 +76,37 @@ mod tests {
         });
 
         assert_eq!(TestStruct::dox(), expected);
+    }
+
+    #[test]
+    fn test_snake_case_rename() {
+        let expected = Field::Container(Container {
+            name: "SnakeCaseStruct".to_string(),
+            type_name: "SnakeCaseStruct".to_string(),
+            fields: vec![Field::Primitive(Primitive {
+                name: "camel_case_field".to_string(),
+                typ: Typ::String,
+                doc: "This is a camel case field".to_string(),
+            })],
+            doc: "This is a struct with snake_case rename".to_string(),
+        });
+
+        assert_eq!(SnakeCaseStruct::dox(), expected);
+    }
+
+    #[test]
+    fn test_camel_case_rename() {
+        let expected = Field::Container(Container {
+            name: "CamelCaseStruct".to_string(),
+            type_name: "CamelCaseStruct".to_string(),
+            fields: vec![Field::Primitive(Primitive {
+                name: "snakeCaseField".to_string(),
+                typ: Typ::String,
+                doc: "This is a snake case field".to_string(),
+            })],
+            doc: "This is a struct with camelCase rename".to_string(),
+        });
+
+        assert_eq!(CamelCaseStruct::dox(), expected);
     }
 }
