@@ -171,6 +171,26 @@ fn process_field(field: &syn::Field, rename_all: &Option<String>) -> proc_macro2
     }
 }
 
+fn process_enum_variant(
+    variant: &syn::Variant,
+    rename_all: &Option<String>,
+) -> proc_macro2::TokenStream {
+    let variant_name = &variant.ident;
+    let variant_str = variant_name.to_string();
+    let renamed_variant = rename_all
+        .as_ref()
+        .map(|rule| rename_field(&variant_str, rule))
+        .unwrap_or_else(|| variant_str.clone());
+    let docs = extract_doc_comments(&variant.attrs);
+
+    quote! {
+        libdox::Variant {
+            name: #renamed_variant.to_string(),
+            doc: #docs.to_string(),
+        }
+    }
+}
+
 #[proc_macro_derive(Dox)]
 pub fn dox_derive(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
@@ -224,13 +244,7 @@ pub fn dox_derive(input: TokenStream) -> TokenStream {
                         return syn::Error::new_spanned(v, "Only primitive enums are supported")
                             .to_compile_error();
                     }
-                    let variant_name = &v.ident;
-                    let variant_str = variant_name.to_string();
-                    let renamed_variant = rename_all
-                        .as_ref()
-                        .map(|rule| rename_field(&variant_str, rule))
-                        .unwrap_or_else(|| variant_str.clone());
-                    quote! { #renamed_variant.to_string() }
+                    process_enum_variant(v, &rename_all)
                 })
                 .collect();
 

@@ -73,10 +73,16 @@ pub enum Field {
 }
 
 #[derive(Debug, Clone, PartialEq)]
+pub struct Variant {
+    pub name: String,
+    pub doc: String,
+}
+
+#[derive(Debug, Clone, PartialEq)]
 pub struct Enum {
     pub name: String,
     pub doc: String,
-    pub variants: Vec<String>,
+    pub variants: Vec<Variant>,
 }
 
 pub trait Dox {

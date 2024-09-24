@@ -18,7 +18,7 @@ fn render_enum(enum_type: &Enum) -> String {
     result.push_str(&format!("Doc: {}\n", enum_type.doc));
     result.push_str("Variants:\n");
     for variant in &enum_type.variants {
-        result.push_str(&format!("- {}\n", variant));
+        result.push_str(&format!("- {} : {}\n", variant.name, variant.doc));
     }
     result
 }

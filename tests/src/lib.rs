@@ -42,8 +42,11 @@ struct CamelCaseStruct {
 /// This is a test enum
 #[derive(Dox, Serialize)]
 enum TestEnum {
+    /// First variant
     Variant1,
+    /// Second variant
     Variant2,
+    /// Third variant
     Variant3,
 }
 
@@ -51,8 +54,11 @@ enum TestEnum {
 #[derive(Dox, Serialize)]
 #[serde(rename_all = "snake_case")]
 enum SnakeCaseEnum {
+    /// First variant
     VariantOne,
+    /// Second variant
     VariantTwo,
+    /// Third variant
     VariantThree,
 }
 
@@ -60,15 +66,18 @@ enum SnakeCaseEnum {
 #[derive(Dox, Serialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 enum ScreamingSnakeCaseEnum {
+    /// First variant
     VariantOne,
+    /// Second variant
     VariantTwo,
+    /// Third variant
     VariantThree,
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use libdox::{Container, Enum, Field, Primitive, Typ};
+    use libdox::{Container, Enum, Field, Primitive, Typ, Variant};
     use pretty_assertions::assert_eq;
 
     #[test]
@@ -142,9 +151,18 @@ mod tests {
             name: "TestEnum".to_string(),
             doc: "This is a test enum".to_string(),
             variants: vec![
-                "Variant1".to_string(),
-                "Variant2".to_string(),
-                "Variant3".to_string(),
+                Variant {
+                    name: "Variant1".to_string(),
+                    doc: "First variant".to_string(),
+                },
+                Variant {
+                    name: "Variant2".to_string(),
+                    doc: "Second variant".to_string(),
+                },
+                Variant {
+                    name: "Variant3".to_string(),
+                    doc: "Third variant".to_string(),
+                },
             ],
         });
 
@@ -157,9 +175,18 @@ mod tests {
             name: "SnakeCaseEnum".to_string(),
             doc: "This is a snake_case enum".to_string(),
             variants: vec![
-                "variant_one".to_string(),
-                "variant_two".to_string(),
-                "variant_three".to_string(),
+                Variant {
+                    name: "variant_one".to_string(),
+                    doc: "First variant".to_string(),
+                },
+                Variant {
+                    name: "variant_two".to_string(),
+                    doc: "Second variant".to_string(),
+                },
+                Variant {
+                    name: "variant_three".to_string(),
+                    doc: "Third variant".to_string(),
+                },
             ],
         });
 
@@ -172,9 +199,18 @@ mod tests {
             name: "ScreamingSnakeCaseEnum".to_string(),
             doc: "This is a SCREAMING_SNAKE_CASE enum".to_string(),
             variants: vec![
-                "VARIANT_ONE".to_string(),
-                "VARIANT_TWO".to_string(),
-                "VARIANT_THREE".to_string(),
+                Variant {
+                    name: "VARIANT_ONE".to_string(),
+                    doc: "First variant".to_string(),
+                },
+                Variant {
+                    name: "VARIANT_TWO".to_string(),
+                    doc: "Second variant".to_string(),
+                },
+                Variant {
+                    name: "VARIANT_THREE".to_string(),
+                    doc: "Third variant".to_string(),
+                },
             ],
         });
 
