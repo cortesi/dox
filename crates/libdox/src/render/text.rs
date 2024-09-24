@@ -18,7 +18,7 @@ fn render_field(field: &Field, indent: usize) -> String {
             prim.doc
         ),
         Field::Container(container) => {
-            let mut result = container.doc.to_string();
+            let mut result = format!("{}{}", "  ".repeat(indent), container.doc);
             for field in &container.fields {
                 result.push_str(&format!("\n{}", render_field(field, indent + 1)));
             }

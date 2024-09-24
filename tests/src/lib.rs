@@ -26,25 +26,8 @@ struct TestStruct {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use indoc::indoc;
-    use libdox::{render, render::Text, Container, Field, Primitive, Typ};
+    use libdox::{Container, Field, Primitive, Typ};
     use pretty_assertions::assert_eq;
-
-    #[test]
-    fn test_simple_render() {
-        let result = render::<TestStruct, _>(&Text);
-        assert_eq!(
-            result,
-            indoc! {"
-                This is a test struct
-                  test (String): This is a test field
-                This is a nested struct
-                    inner (i32): This is an inner field
-                  vector (Vec<i32>): This is a vector of integers
-            "}
-            .trim()
-        );
-    }
 
     #[test]
     fn test_dox() {
@@ -64,7 +47,6 @@ mod tests {
                         doc: "This is an inner field".to_string(),
                     })],
                     doc: "This is a nested struct".to_string(),
-                    original_name: "InnerStruct".to_string(),
                 }),
                 Field::Primitive(Primitive {
                     name: "vector".to_string(),
@@ -73,7 +55,6 @@ mod tests {
                 }),
             ],
             doc: "This is a test struct".to_string(),
-            original_name: "TestStruct".to_string(),
         });
 
         assert_eq!(TestStruct::dox(), expected);

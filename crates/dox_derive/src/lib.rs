@@ -1,25 +1,21 @@
 use proc_macro::TokenStream;
 use quote::quote;
-use syn::{parse_macro_input, Attribute, Data, DeriveInput, Fields, FieldsNamed, Meta};
+use syn::{
+    parse_macro_input, Attribute, Data, DeriveInput, Expr, ExprLit, Fields, FieldsNamed, Lit, Meta,
+};
 
 fn extract_doc_comments(attrs: &[Attribute]) -> String {
     attrs
         .iter()
         .filter(|attr| attr.path().is_ident("doc"))
         .filter_map(|attr| {
-            if let Meta::NameValue(meta) = &attr.meta {
-                if let syn::Expr::Lit(syn::ExprLit {
-                    lit: syn::Lit::Str(lit_str),
-                    ..
-                }) = &meta.value
-                {
-                    Some(lit_str.value().trim().to_string())
+            attr.parse_args::<Lit>().ok().and_then(|lit| {
+                if let Lit::Str(s) = lit {
+                    Some(s.value().trim().to_string())
                 } else {
                     None
                 }
-            } else {
-                None
-            }
+            })
         })
         .collect::<Vec<String>>()
         .join("\n")
@@ -28,24 +24,32 @@ fn extract_doc_comments(attrs: &[Attribute]) -> String {
 fn extract_serde_rename(attrs: &[Attribute]) -> Option<String> {
     attrs.iter().find_map(|attr| {
         if attr.path().is_ident("serde") {
-            if let Meta::List(meta_list) = &attr.meta {
-                for nested_meta in meta_list.tokens.clone().into_iter() {
-                    let token_stream = proc_macro2::TokenStream::from(nested_meta);
-                    if let Ok(Meta::NameValue(name_value)) = syn::parse2::<Meta>(token_stream) {
+            attr.parse_args_with(|input: syn::parse::ParseStream| {
+                let mut rename = None;
+                while !input.is_empty() {
+                    let meta: syn::Meta = input.parse()?;
+                    if let syn::Meta::NameValue(name_value) = meta {
                         if name_value.path.is_ident("rename") {
-                            if let syn::Expr::Lit(syn::ExprLit {
-                                lit: syn::Lit::Str(lit_str),
+                            if let Expr::Lit(ExprLit {
+                                lit: Lit::Str(lit_str),
                                 ..
                             }) = name_value.value
                             {
-                                return Some(lit_str.value());
+                                rename = Some(lit_str.value());
                             }
                         }
                     }
+                    if !input.is_empty() {
+                        input.parse::<syn::Token![,]>()?;
+                    }
                 }
-            }
+                Ok(rename)
+            })
+            .ok()
+            .flatten()
+        } else {
+            None
         }
-        None
     })
 }
 
@@ -108,10 +112,33 @@ pub fn dox_derive(input: TokenStream) -> TokenStream {
                         #(#field_docs),*
                     ],
                     doc: #struct_docs.to_string(),
-                    original_name: stringify!(#name).to_string(),
                 })
             }
         }
     };
     TokenStream::from(expanded)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use syn::parse_quote;
+
+    #[test]
+    fn test_extract_serde_rename() {
+        let item: syn::ItemStruct = parse_quote! {
+            #[serde(rename = "new_name")]
+            struct Test;
+        };
+        assert_eq!(
+            extract_serde_rename(&item.attrs),
+            Some("new_name".to_string())
+        );
+
+        let item: syn::ItemStruct = parse_quote! {
+            #[derive(Debug)]
+            struct Test;
+        };
+        assert_eq!(extract_serde_rename(&item.attrs), None);
+    }
 }
