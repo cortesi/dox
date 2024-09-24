@@ -23,7 +23,7 @@ struct TestStruct {
 mod tests {
     use super::*;
     use indoc::indoc;
-    use libdox::{render, Container, Field, Primitive, Text};
+    use libdox::{render, Container, Field, Primitive, Text, Typ};
     use pretty_assertions::assert_eq;
 
     #[test]
@@ -36,7 +36,7 @@ mod tests {
                   test_field (String): This is a test field
                 This is a nested struct
                     inner_field (i32): This is an inner field
-                  vec_field (Vec < i32 >): This is a vector of integers
+                  vec_field (Vec<i32>): This is a vector of integers
             "}
             .trim()
         );
@@ -49,21 +49,21 @@ mod tests {
             fields: vec![
                 Field::Primitive(Primitive {
                     name: "test_field".to_string(),
-                    typ: "String".to_string(),
+                    typ: Typ::String,
                     doc: "This is a test field".to_string(),
                 }),
                 Field::Container(Container {
                     name: "nested".to_string(),
                     fields: vec![Field::Primitive(Primitive {
                         name: "inner_field".to_string(),
-                        typ: "i32".to_string(),
+                        typ: Typ::I32,
                         doc: "This is an inner field".to_string(),
                     })],
                     doc: "This is a nested struct".to_string(),
                 }),
                 Field::Primitive(Primitive {
                     name: "vec_field".to_string(),
-                    typ: "Vec < i32 >".to_string(),
+                    typ: Typ::Vec(Box::new(Typ::I32)),
                     doc: "This is a vector of integers".to_string(),
                 }),
             ],
