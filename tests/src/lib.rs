@@ -23,7 +23,7 @@ struct TestStruct {
 mod tests {
     use super::*;
     use indoc::indoc;
-    use libdox::{render, Container, Field, Primitive, Text, Typ};
+    use libdox::{render, render::Text, Container, Field, Primitive, Typ};
     use pretty_assertions::assert_eq;
 
     #[test]
