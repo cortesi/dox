@@ -28,40 +28,19 @@ fn process_field(field: &syn::Field) -> proc_macro2::TokenStream {
     let docs = extract_doc_comments(&field.attrs);
     let ty = &field.ty;
     let name_str = name.to_string();
-    let type_str = quote!(#ty).to_string();
 
-    match ty {
-        syn::Type::Path(type_path)
-            if type_path
-                .path
-                .segments
-                .last()
-                .map(|s| s.ident == "Vec")
-                .unwrap_or(false) =>
-        {
-            quote! {
-                libdox::Field::Primitive(libdox::Primitive {
-                    name: #name_str.to_string(),
-                    typ: #type_str.to_string(),
-                    doc: #docs.to_string(),
-                })
-            }
-        }
-        _ => {
-            quote! {
-                match <#ty as libdox::Dox>::dox() {
-                    libdox::Field::Container(mut container) => {
-                        container.name = #name_str.to_string();
-                        container.doc = #docs.to_string();
-                        libdox::Field::Container(container)
-                    },
-                    _ => libdox::Field::Primitive(libdox::Primitive {
-                        name: #name_str.to_string(),
-                        typ: #type_str.to_string(),
-                        doc: #docs.to_string(),
-                    }),
-                }
-            }
+    quote! {
+        match <#ty as libdox::Dox>::dox() {
+            libdox::Field::Container(mut container) => {
+                container.name = #name_str.to_string();
+                container.doc = #docs.to_string();
+                libdox::Field::Container(container)
+            },
+            libdox::Field::Primitive(mut primitive) => {
+                primitive.name = #name_str.to_string();
+                primitive.doc = #docs.to_string();
+                libdox::Field::Primitive(primitive)
+            },
         }
     }
 }

@@ -24,12 +24,17 @@ pub trait Dox {
     fn dox() -> Field;
 }
 
-impl<T> Dox for Vec<T> {
+impl<T: Dox> Dox for Vec<T> {
     fn dox() -> Field {
+        let inner = T::dox();
+        let inner_type = match inner {
+            Field::Primitive(p) => p.typ,
+            Field::Container(c) => c.name,
+        };
         Field::Primitive(Primitive {
-            name: "Vec".to_string(),
-            typ: "Vec<T>".to_string(),
-            doc: "A vector of items".to_string(),
+            name: String::new(),
+            typ: format!("Vec < {} >", inner_type),
+            doc: String::new(),
         })
     }
 }
@@ -54,7 +59,17 @@ impl_dox_for_primitive! {
     i8, i16, i32, i64, i128, isize,
     u8, u16, u32, u64, u128, usize,
     f32, f64,
-    bool, char, String
+    bool, char
+}
+
+impl Dox for String {
+    fn dox() -> Field {
+        Field::Primitive(Primitive {
+            name: String::new(),
+            typ: "String".to_string(),
+            doc: String::new(),
+        })
+    }
 }
 
 pub trait Renderer {
