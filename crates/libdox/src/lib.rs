@@ -60,6 +60,7 @@ pub struct Primitive {
 #[derive(Debug, Clone, PartialEq)]
 pub struct Container {
     pub name: String,
+    pub type_name: String,
     pub fields: Vec<Field>,
     pub doc: String,
 }

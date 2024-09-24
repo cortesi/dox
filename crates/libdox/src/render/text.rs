@@ -15,8 +15,8 @@ fn render_container(container: &Container) -> String {
     let mut result = String::new();
     result.push_str(&format!(
         "{}\n{}\n",
-        container.name,
-        "=".repeat(container.name.len())
+        container.type_name,
+        "=".repeat(container.type_name.len())
     ));
 
     for field in &container.fields {
@@ -27,7 +27,7 @@ fn render_container(container: &Container) -> String {
             Field::Container(nested) => {
                 result.push_str(&format!(
                     "{} ({}): {}\n",
-                    nested.name, nested.name, nested.doc
+                    nested.name, nested.type_name, nested.doc
                 ));
                 result.push('\n');
                 result.push_str(&render_container(nested));
@@ -49,6 +49,7 @@ mod tests {
     fn test_text_renderer() {
         let doc = Field::Container(Container {
             name: "TestStruct".to_string(),
+            type_name: "TestStruct".to_string(),
             doc: "This is a test struct".to_string(),
             fields: vec![
                 Field::Primitive(Primitive {
@@ -62,7 +63,8 @@ mod tests {
                     doc: "An integer field".to_string(),
                 }),
                 Field::Container(Container {
-                    name: "NestedStruct".to_string(),
+                    name: "nested".to_string(),
+                    type_name: "NestedStruct".to_string(),
                     doc: "A nested struct".to_string(),
                     fields: vec![Field::Primitive(Primitive {
                         name: "inner_field".to_string(),
@@ -81,7 +83,7 @@ mod tests {
             ==========
             field1 (String): A string field
             field2 (i32): An integer field
-            NestedStruct (NestedStruct): A nested struct
+            nested (NestedStruct): A nested struct
 
             NestedStruct
             ============

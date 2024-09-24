@@ -33,6 +33,7 @@ mod tests {
     fn test_dox() {
         let expected = Field::Container(Container {
             name: "TestStruct".to_string(),
+            type_name: "TestStruct".to_string(),
             fields: vec![
                 Field::Primitive(Primitive {
                     name: "test".to_string(),
@@ -41,6 +42,7 @@ mod tests {
                 }),
                 Field::Container(Container {
                     name: "nested".to_string(),
+                    type_name: "InnerStruct".to_string(),
                     fields: vec![Field::Primitive(Primitive {
                         name: "inner".to_string(),
                         typ: Typ::I32,

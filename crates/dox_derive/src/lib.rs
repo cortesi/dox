@@ -9,7 +9,7 @@ fn extract_doc_comments(attrs: &[Attribute]) -> String {
         .iter()
         .filter(|attr| attr.path().is_ident("doc"))
         .filter_map(|attr| {
-            if let Ok(Meta::NameValue(meta)) = attr.meta.clone().try_into() {
+            if let Meta::NameValue(meta) = attr.meta.clone() {
                 if let Expr::Lit(ExprLit {
                     lit: Lit::Str(s), ..
                 }) = meta.value
@@ -113,6 +113,7 @@ pub fn dox_derive(input: TokenStream) -> TokenStream {
             fn dox() -> libdox::Field {
                 libdox::Field::Container(libdox::Container {
                     name: #name_str.to_string(),
+                    type_name: stringify!(#name).to_string(),
                     fields: vec![
                         #(#field_docs),*
                     ],
