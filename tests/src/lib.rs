@@ -47,6 +47,24 @@ enum TestEnum {
     Variant3,
 }
 
+/// This is a snake_case enum
+#[derive(Dox, Serialize)]
+#[serde(rename_all = "snake_case")]
+enum SnakeCaseEnum {
+    VariantOne,
+    VariantTwo,
+    VariantThree,
+}
+
+/// This is a SCREAMING_SNAKE_CASE enum
+#[derive(Dox, Serialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+enum ScreamingSnakeCaseEnum {
+    VariantOne,
+    VariantTwo,
+    VariantThree,
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -131,5 +149,35 @@ mod tests {
         });
 
         assert_eq!(TestEnum::dox(), expected);
+    }
+
+    #[test]
+    fn test_snake_case_enum() {
+        let expected = Field::Enum(Enum {
+            name: "SnakeCaseEnum".to_string(),
+            doc: "This is a snake_case enum".to_string(),
+            variants: vec![
+                "variant_one".to_string(),
+                "variant_two".to_string(),
+                "variant_three".to_string(),
+            ],
+        });
+
+        assert_eq!(SnakeCaseEnum::dox(), expected);
+    }
+
+    #[test]
+    fn test_screaming_snake_case_enum() {
+        let expected = Field::Enum(Enum {
+            name: "ScreamingSnakeCaseEnum".to_string(),
+            doc: "This is a SCREAMING_SNAKE_CASE enum".to_string(),
+            variants: vec![
+                "VARIANT_ONE".to_string(),
+                "VARIANT_TWO".to_string(),
+                "VARIANT_THREE".to_string(),
+            ],
+        });
+
+        assert_eq!(ScreamingSnakeCaseEnum::dox(), expected);
     }
 }

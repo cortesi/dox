@@ -91,11 +91,15 @@ fn extract_serde_rename_all(attrs: &[Attribute]) -> Option<String> {
 }
 
 fn rename_field(name: &str, rename_rule: &str) -> String {
+    if name.is_empty() {
+        return String::new();
+    }
     match rename_rule {
         "lowercase" => name.to_lowercase(),
         "UPPERCASE" => name.to_uppercase(),
         "PascalCase" => name
             .split('_')
+            .filter(|s| !s.is_empty())
             .map(|word| {
                 let mut c = word.chars();
                 match c.next() {
@@ -106,12 +110,29 @@ fn rename_field(name: &str, rename_rule: &str) -> String {
             .collect(),
         "camelCase" => {
             let pascal = rename_field(name, "PascalCase");
-            pascal[..1].to_lowercase() + &pascal[1..]
+            if pascal.is_empty() {
+                String::new()
+            } else {
+                pascal[..1].to_lowercase() + &pascal[1..]
+            }
         }
-        "snake_case" => name.to_lowercase().replace(' ', "_"),
-        "SCREAMING_SNAKE_CASE" => name.to_uppercase().replace(' ', "_"),
-        "kebab-case" => name.to_lowercase().replace('_', "-"),
-        "SCREAMING-KEBAB-CASE" => name.to_uppercase().replace('_', "-"),
+        "snake_case" => {
+            let words: Vec<String> = name.chars().fold(Vec::new(), |mut acc, c| {
+                if c.is_uppercase() && !acc.is_empty() {
+                    acc.push(String::new());
+                }
+                if let Some(last) = acc.last_mut() {
+                    last.push(c.to_lowercase().next().unwrap());
+                } else {
+                    acc.push(c.to_lowercase().to_string());
+                }
+                acc
+            });
+            words.join("_")
+        }
+        "SCREAMING_SNAKE_CASE" => rename_field(name, "snake_case").to_uppercase(),
+        "kebab-case" => rename_field(name, "snake_case").replace('_', "-"),
+        "SCREAMING-KEBAB-CASE" => rename_field(name, "SCREAMING_SNAKE_CASE").replace('_', "-"),
         _ => name.to_string(),
     }
 }
@@ -194,6 +215,7 @@ pub fn dox_derive(input: TokenStream) -> TokenStream {
             let enum_docs = extract_doc_comments(&input.attrs);
             let name_str = name.to_string();
 
+            let rename_all = extract_serde_rename_all(&input.attrs);
             let variants: Vec<_> = data_enum
                 .variants
                 .iter()
@@ -203,7 +225,12 @@ pub fn dox_derive(input: TokenStream) -> TokenStream {
                             .to_compile_error();
                     }
                     let variant_name = &v.ident;
-                    quote! { stringify!(#variant_name).to_string() }
+                    let variant_str = variant_name.to_string();
+                    let renamed_variant = rename_all
+                        .as_ref()
+                        .map(|rule| rename_field(&variant_str, rule))
+                        .unwrap_or_else(|| variant_str.clone());
+                    quote! { #renamed_variant.to_string() }
                 })
                 .collect();
 
@@ -314,6 +341,12 @@ mod tests {
         assert_eq!(
             rename_field("test_field", "SCREAMING-KEBAB-CASE"),
             "TEST-FIELD"
+        );
+        assert_eq!(rename_field("TestField", "snake_case"), "test_field");
+        assert_eq!(rename_field("testField", "snake_case"), "test_field");
+        assert_eq!(
+            rename_field("TestField", "SCREAMING_SNAKE_CASE"),
+            "TEST_FIELD"
         );
     }
 }
