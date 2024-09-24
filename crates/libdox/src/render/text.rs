@@ -12,7 +12,12 @@ impl Renderer for Text {
 }
 
 fn render_container(container: &Container) -> String {
-    let mut result = format!("{}\n{}\n", container.name, "=".repeat(container.name.len()));
+    let mut result = String::new();
+    result.push_str(&format!(
+        "{}\n{}\n",
+        container.name,
+        "=".repeat(container.name.len())
+    ));
 
     for field in &container.fields {
         match field {
@@ -24,6 +29,7 @@ fn render_container(container: &Container) -> String {
                     "{} ({}): {}\n",
                     nested.name, nested.name, nested.doc
                 ));
+                result.push('\n');
                 result.push_str(&render_container(nested));
             }
         }
@@ -76,6 +82,7 @@ mod tests {
             field1 (String): A string field
             field2 (i32): An integer field
             NestedStruct (NestedStruct): A nested struct
+
             NestedStruct
             ============
             inner_field (bool): A boolean field
