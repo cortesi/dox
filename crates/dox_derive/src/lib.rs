@@ -140,6 +140,10 @@ fn process_field(field: &syn::Field, rename_all: &Option<String>) -> proc_macro2
                     primitive.name = #name_str.to_string();
                     primitive.doc = #docs.to_string();
                 },
+                libdox::Field::Enum(enum_type) => {
+                    enum_type.name = #name_str.to_string();
+                    enum_type.doc = #docs.to_string();
+                },
             }
             field
         }
@@ -151,45 +155,77 @@ pub fn dox_derive(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
     let name = &input.ident;
 
-    let fields = match &input.data {
-        Data::Struct(data_struct) => match &data_struct.fields {
-            Fields::Named(FieldsNamed { named, .. }) => named,
-            _ => {
-                return syn::Error::new_spanned(&input, "Only named fields are supported")
-                    .to_compile_error()
-                    .into()
+    let expanded = match &input.data {
+        Data::Struct(data_struct) => {
+            let fields = match &data_struct.fields {
+                Fields::Named(FieldsNamed { named, .. }) => named,
+                _ => {
+                    return syn::Error::new_spanned(&input, "Only named fields are supported")
+                        .to_compile_error()
+                        .into()
+                }
+            };
+
+            let rename_all = extract_serde_rename_all(&input.attrs);
+            let field_docs: Vec<_> = fields
+                .iter()
+                .map(|f| process_field(f, &rename_all))
+                .collect();
+
+            let struct_docs = extract_doc_comments(&input.attrs);
+            let name_str = name.to_string();
+
+            quote! {
+                impl libdox::Dox for #name {
+                    fn dox() -> libdox::Field {
+                        libdox::Field::Container(libdox::Container {
+                            name: #name_str.to_string(),
+                            type_name: stringify!(#name).to_string(),
+                            fields: vec![
+                                #(#field_docs),*
+                            ],
+                            doc: #struct_docs.to_string(),
+                        })
+                    }
+                }
             }
-        },
+        }
+        Data::Enum(data_enum) => {
+            let enum_docs = extract_doc_comments(&input.attrs);
+            let name_str = name.to_string();
+
+            let variants: Vec<_> = data_enum
+                .variants
+                .iter()
+                .map(|v| {
+                    if !v.fields.is_empty() {
+                        return syn::Error::new_spanned(v, "Only primitive enums are supported")
+                            .to_compile_error();
+                    }
+                    let variant_name = &v.ident;
+                    quote! { stringify!(#variant_name).to_string() }
+                })
+                .collect();
+
+            quote! {
+                impl libdox::Dox for #name {
+                    fn dox() -> libdox::Field {
+                        libdox::Field::Enum(libdox::Enum {
+                            name: #name_str.to_string(),
+                            doc: #enum_docs.to_string(),
+                            variants: vec![#(#variants),*],
+                        })
+                    }
+                }
+            }
+        }
         _ => {
-            return syn::Error::new_spanned(&input, "Only structs are supported")
+            return syn::Error::new_spanned(&input, "Only structs and enums are supported")
                 .to_compile_error()
                 .into()
         }
     };
 
-    let rename_all = extract_serde_rename_all(&input.attrs);
-    let field_docs: Vec<_> = fields
-        .iter()
-        .map(|f| process_field(f, &rename_all))
-        .collect();
-
-    let struct_docs = extract_doc_comments(&input.attrs);
-    let name_str = name.to_string();
-
-    let expanded = quote! {
-        impl libdox::Dox for #name {
-            fn dox() -> libdox::Field {
-                libdox::Field::Container(libdox::Container {
-                    name: #name_str.to_string(),
-                    type_name: stringify!(#name).to_string(),
-                    fields: vec![
-                        #(#field_docs),*
-                    ],
-                    doc: #struct_docs.to_string(),
-                })
-            }
-        }
-    };
     TokenStream::from(expanded)
 }
 

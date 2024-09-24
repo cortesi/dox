@@ -1,4 +1,4 @@
-use crate::{Container, Field, Renderer};
+use crate::{Container, Enum, Field, Renderer};
 
 pub struct Text;
 
@@ -7,8 +7,20 @@ impl Renderer for Text {
         match doc_type {
             Field::Container(container) => render_container(&container),
             Field::Primitive(_) => String::new(),
+            Field::Enum(enum_type) => render_enum(&enum_type),
         }
     }
+}
+
+fn render_enum(enum_type: &Enum) -> String {
+    let mut result = String::new();
+    result.push_str(&format!("{} (enum)\n", enum_type.name));
+    result.push_str(&format!("Doc: {}\n", enum_type.doc));
+    result.push_str("Variants:\n");
+    for variant in &enum_type.variants {
+        result.push_str(&format!("- {}\n", variant));
+    }
+    result
 }
 
 fn render_container(container: &Container) -> String {
@@ -31,6 +43,10 @@ fn render_container(container: &Container) -> String {
                 ));
                 result.push('\n');
                 result.push_str(&render_container(nested));
+            }
+            Field::Enum(enum_type) => {
+                result.push_str(&format!("{} (enum): {}\n", enum_type.name, enum_type.doc));
+                result.push_str(&render_enum(enum_type));
             }
         }
     }

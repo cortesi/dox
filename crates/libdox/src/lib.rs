@@ -69,6 +69,14 @@ pub struct Container {
 pub enum Field {
     Primitive(Primitive),
     Container(Container),
+    Enum(Enum),
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct Enum {
+    pub name: String,
+    pub doc: String,
+    pub variants: Vec<String>,
 }
 
 pub trait Dox {
@@ -80,7 +88,7 @@ impl<T: Dox> Dox for Vec<T> {
         let inner = T::dox();
         let inner_type = match inner {
             Field::Primitive(p) => p.typ,
-            Field::Container(_) => Typ::String, // Use String as a placeholder for custom types
+            Field::Container(_) | Field::Enum(_) => Typ::String, // Use String as a placeholder for custom types
         };
         Field::Primitive(Primitive {
             name: String::new(),

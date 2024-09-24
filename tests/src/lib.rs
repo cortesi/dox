@@ -39,10 +39,18 @@ struct CamelCaseStruct {
     snake_case_field: String,
 }
 
+/// This is a test enum
+#[derive(Dox, Serialize)]
+enum TestEnum {
+    Variant1,
+    Variant2,
+    Variant3,
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
-    use libdox::{Container, Field, Primitive, Typ};
+    use libdox::{Container, Enum, Field, Primitive, Typ};
     use pretty_assertions::assert_eq;
 
     #[test]
@@ -108,5 +116,20 @@ mod tests {
         });
 
         assert_eq!(CamelCaseStruct::dox(), expected);
+    }
+
+    #[test]
+    fn test_enum() {
+        let expected = Field::Enum(Enum {
+            name: "TestEnum".to_string(),
+            doc: "This is a test enum".to_string(),
+            variants: vec![
+                "Variant1".to_string(),
+                "Variant2".to_string(),
+                "Variant3".to_string(),
+            ],
+        });
+
+        assert_eq!(TestEnum::dox(), expected);
     }
 }
