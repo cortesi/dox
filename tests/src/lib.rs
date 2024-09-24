@@ -33,9 +33,10 @@ mod tests {
             result,
             indoc! {"
                 This is a test struct
-                test_field (String): This is a test field
-                nested (InnerStruct): This is a nested struct
-                vec_field (Vec < i32 >): This is a vector of integers
+                  test_field (String): This is a test field
+                This is a nested struct
+                    inner_field (i32): This is an inner field
+                  vec_field (Vec < i32 >): This is a vector of integers
             "}
             .trim()
         );
@@ -51,9 +52,13 @@ mod tests {
                     typ: "String".to_string(),
                     doc: "This is a test field".to_string(),
                 }),
-                Field::Primitive(Primitive {
+                Field::Container(Container {
                     name: "nested".to_string(),
-                    typ: "InnerStruct".to_string(),
+                    fields: vec![Field::Primitive(Primitive {
+                        name: "inner_field".to_string(),
+                        typ: "i32".to_string(),
+                        doc: "This is an inner field".to_string(),
+                    })],
                     doc: "This is a nested struct".to_string(),
                 }),
                 Field::Primitive(Primitive {

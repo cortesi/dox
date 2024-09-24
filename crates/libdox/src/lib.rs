@@ -34,6 +34,26 @@ impl<T> Dox for Vec<T> {
     }
 }
 
+impl Dox for i32 {
+    fn dox() -> Field {
+        Field::Primitive(Primitive {
+            name: "i32".to_string(),
+            typ: "i32".to_string(),
+            doc: "32-bit signed integer".to_string(),
+        })
+    }
+}
+
+impl Dox for String {
+    fn dox() -> Field {
+        Field::Primitive(Primitive {
+            name: "String".to_string(),
+            typ: "String".to_string(),
+            doc: "UTF-8 encoded, growable string".to_string(),
+        })
+    }
+}
+
 pub trait Renderer {
     fn render(&self, doc_type: Field) -> String;
 }
@@ -42,16 +62,26 @@ pub struct Text;
 
 impl Renderer for Text {
     fn render(&self, doc_type: Field) -> String {
-        match doc_type {
-            Field::Primitive(field) => format!("{} ({}): {}", field.name, field.typ, field.doc),
+        self.render_field(&doc_type, 0)
+    }
+}
+
+impl Text {
+    fn render_field(&self, field: &Field, indent: usize) -> String {
+        match field {
+            Field::Primitive(prim) => format!(
+                "{}{} ({}): {}",
+                "  ".repeat(indent),
+                prim.name,
+                prim.typ,
+                prim.doc
+            ),
             Field::Container(container) => {
-                let fields = container
-                    .fields
-                    .iter()
-                    .map(|field| self.render(field.clone()))
-                    .collect::<Vec<_>>()
-                    .join("\n");
-                format!("{}\n{}", container.doc, fields)
+                let mut result = container.doc.to_string();
+                for field in &container.fields {
+                    result.push_str(&format!("\n{}", self.render_field(field, indent + 1)));
+                }
+                result
             }
         }
     }
