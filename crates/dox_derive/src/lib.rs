@@ -1,13 +1,13 @@
 use proc_macro::TokenStream;
 use quote::quote;
-use syn::{parse_macro_input, Attribute, Data, DeriveInput, Fields, FieldsNamed};
+use syn::{parse_macro_input, Attribute, Data, DeriveInput, Fields, FieldsNamed, Meta};
 
 fn extract_doc_comments(attrs: &[Attribute]) -> String {
     attrs
         .iter()
         .filter(|attr| attr.path().is_ident("doc"))
         .filter_map(|attr| {
-            attr.meta.require_name_value().ok().and_then(|meta| {
+            if let Meta::NameValue(meta) = &attr.meta {
                 if let syn::Expr::Lit(syn::ExprLit {
                     lit: syn::Lit::Str(lit_str),
                     ..
@@ -17,30 +17,58 @@ fn extract_doc_comments(attrs: &[Attribute]) -> String {
                 } else {
                     None
                 }
-            })
+            } else {
+                None
+            }
         })
         .collect::<Vec<String>>()
         .join("\n")
+}
+
+fn extract_serde_rename(attrs: &[Attribute]) -> Option<String> {
+    attrs.iter().find_map(|attr| {
+        if attr.path().is_ident("serde") {
+            if let Meta::List(meta_list) = &attr.meta {
+                for nested_meta in meta_list.tokens.clone().into_iter() {
+                    let token_stream = proc_macro2::TokenStream::from(nested_meta);
+                    if let Ok(Meta::NameValue(name_value)) = syn::parse2::<Meta>(token_stream) {
+                        if name_value.path.is_ident("rename") {
+                            if let syn::Expr::Lit(syn::ExprLit {
+                                lit: syn::Lit::Str(lit_str),
+                                ..
+                            }) = name_value.value
+                            {
+                                return Some(lit_str.value());
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        None
+    })
 }
 
 fn process_field(field: &syn::Field) -> proc_macro2::TokenStream {
     let name = field.ident.as_ref().unwrap();
     let docs = extract_doc_comments(&field.attrs);
     let ty = &field.ty;
-    let name_str = name.to_string();
+    let name_str = extract_serde_rename(&field.attrs).unwrap_or_else(|| name.to_string());
 
     quote! {
-        match <#ty as libdox::Dox>::dox() {
-            libdox::Field::Container(mut container) => {
-                container.name = #name_str.to_string();
-                container.doc = #docs.to_string();
-                libdox::Field::Container(container)
-            },
-            libdox::Field::Primitive(mut primitive) => {
-                primitive.name = #name_str.to_string();
-                primitive.doc = #docs.to_string();
-                libdox::Field::Primitive(primitive)
-            },
+        {
+            let mut field = <#ty as libdox::Dox>::dox();
+            match &mut field {
+                libdox::Field::Container(container) => {
+                    container.name = #name_str.to_string();
+                    container.doc = #docs.to_string();
+                },
+                libdox::Field::Primitive(primitive) => {
+                    primitive.name = #name_str.to_string();
+                    primitive.doc = #docs.to_string();
+                },
+            }
+            field
         }
     }
 }
@@ -80,6 +108,7 @@ pub fn dox_derive(input: TokenStream) -> TokenStream {
                         #(#field_docs),*
                     ],
                     doc: #struct_docs.to_string(),
+                    original_name: stringify!(#name).to_string(),
                 })
             }
         }

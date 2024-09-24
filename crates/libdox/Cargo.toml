@@ -5,6 +5,5 @@ edition = "2021"
 
 [dependencies]
 dox_derive = { path = "../dox_derive" }
+serde = { version = "1.0.210", features = ["serde_derive"] }
 
-[dev-dependencies]
-dox_derive = { path = "../dox_derive" }

@@ -62,6 +62,7 @@ pub struct Container {
     pub name: String,
     pub fields: Vec<Field>,
     pub doc: String,
+    pub original_name: String,
 }
 
 #[derive(Debug, Clone, PartialEq)]
