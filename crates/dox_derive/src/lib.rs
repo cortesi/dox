@@ -9,13 +9,18 @@ fn extract_doc_comments(attrs: &[Attribute]) -> String {
         .iter()
         .filter(|attr| attr.path().is_ident("doc"))
         .filter_map(|attr| {
-            attr.parse_args::<Lit>().ok().and_then(|lit| {
-                if let Lit::Str(s) = lit {
+            if let Ok(Meta::NameValue(meta)) = attr.meta.clone().try_into() {
+                if let Expr::Lit(ExprLit {
+                    lit: Lit::Str(s), ..
+                }) = meta.value
+                {
                     Some(s.value().trim().to_string())
                 } else {
                     None
                 }
-            })
+            } else {
+                None
+            }
         })
         .collect::<Vec<String>>()
         .join("\n")
@@ -140,5 +145,25 @@ mod tests {
             struct Test;
         };
         assert_eq!(extract_serde_rename(&item.attrs), None);
+    }
+
+    #[test]
+    fn test_extract_doc_comments() {
+        let item: syn::ItemStruct = parse_quote! {
+            /// This is a doc comment
+            /// It spans multiple lines
+            #[derive(Debug)]
+            struct Test;
+        };
+        assert_eq!(
+            extract_doc_comments(&item.attrs),
+            "This is a doc comment\nIt spans multiple lines"
+        );
+
+        let item: syn::ItemStruct = parse_quote! {
+            #[derive(Debug)]
+            struct Test;
+        };
+        assert_eq!(extract_doc_comments(&item.attrs), "");
     }
 }
