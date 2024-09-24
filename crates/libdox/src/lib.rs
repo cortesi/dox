@@ -35,14 +35,14 @@ impl<T> Dox for Vec<T> {
 }
 
 macro_rules! impl_dox_for_primitive {
-    ($($t:ty, $name:expr, $doc:expr);*) => {
+    ($($t:ty),*) => {
         $(
             impl Dox for $t {
                 fn dox() -> Field {
                     Field::Primitive(Primitive {
-                        name: $name.to_string(),
-                        typ: stringify!($t).to_string(),
-                        doc: $doc.to_string(),
+                        name: String::new(),
+                        typ: stringify!($t).to_lowercase(),
+                        doc: String::new(),
                     })
                 }
             }
@@ -51,23 +51,10 @@ macro_rules! impl_dox_for_primitive {
 }
 
 impl_dox_for_primitive! {
-    i8, "i8", "8-bit signed integer";
-    i16, "i16", "16-bit signed integer";
-    i32, "i32", "32-bit signed integer";
-    i64, "i64", "64-bit signed integer";
-    i128, "i128", "128-bit signed integer";
-    isize, "isize", "Pointer-sized signed integer";
-    u8, "u8", "8-bit unsigned integer";
-    u16, "u16", "16-bit unsigned integer";
-    u32, "u32", "32-bit unsigned integer";
-    u64, "u64", "64-bit unsigned integer";
-    u128, "u128", "128-bit unsigned integer";
-    usize, "usize", "Pointer-sized unsigned integer";
-    f32, "f32", "32-bit floating point";
-    f64, "f64", "64-bit floating point";
-    bool, "bool", "Boolean type";
-    char, "char", "Unicode scalar value";
-    String, "String", "UTF-8 encoded, growable string"
+    i8, i16, i32, i64, i128, isize,
+    u8, u16, u32, u64, u128, usize,
+    f32, f64,
+    bool, char, String
 }
 
 pub trait Renderer {
