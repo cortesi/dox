@@ -151,17 +151,17 @@ fn process_field(field: &syn::Field, rename_all: &Option<String>) -> proc_macro2
 
     quote! {
         {
-            let mut field = <#ty as libdox::Dox>::dox();
+            let mut field = <#ty as dox::Dox>::dox();
             match &mut field {
-                libdox::Field::Container(container) => {
+                dox::Field::Container(container) => {
                     container.name = #name_str.to_string();
                     container.doc = #docs.to_string();
                 },
-                libdox::Field::Primitive(primitive) => {
+                dox::Field::Primitive(primitive) => {
                     primitive.name = #name_str.to_string();
                     primitive.doc = #docs.to_string();
                 },
-                libdox::Field::Enum(enum_type) => {
+                dox::Field::Enum(enum_type) => {
                     enum_type.name = #name_str.to_string();
                     enum_type.doc = #docs.to_string();
                 },
@@ -184,7 +184,7 @@ fn process_enum_variant(
     let docs = extract_doc_comments(&variant.attrs);
 
     quote! {
-        libdox::Variant {
+        dox::Variant {
             name: #renamed_variant.to_string(),
             doc: #docs.to_string(),
         }
@@ -217,9 +217,9 @@ pub fn dox_derive(input: TokenStream) -> TokenStream {
             let name_str = name.to_string();
 
             quote! {
-                impl libdox::Dox for #name {
-                    fn dox() -> libdox::Field {
-                        libdox::Field::Container(libdox::Container {
+                impl dox::Dox for #name {
+                    fn dox() -> dox::Field {
+                        dox::Field::Container(dox::Container {
                             name: #name_str.to_string(),
                             type_name: stringify!(#name).to_string(),
                             fields: vec![
@@ -249,9 +249,9 @@ pub fn dox_derive(input: TokenStream) -> TokenStream {
                 .collect();
 
             quote! {
-                impl libdox::Dox for #name {
-                    fn dox() -> libdox::Field {
-                        libdox::Field::Enum(libdox::Enum {
+                impl dox::Dox for #name {
+                    fn dox() -> dox::Field {
+                        dox::Field::Enum(dox::Enum {
                             name: #name_str.to_string(),
                             doc: #enum_docs.to_string(),
                             variants: vec![#(#variants),*],

@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 
-use libdox::Dox;
+use dox::Dox;
 use serde::Serialize;
 
 #[derive(Dox, Serialize)]
@@ -77,7 +77,7 @@ enum ScreamingSnakeCaseEnum {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use libdox::{Container, Enum, Field, Primitive, Typ, Variant};
+    use dox::{Container, Enum, Field, Primitive, Typ, Variant};
     use pretty_assertions::assert_eq;
 
     #[test]
