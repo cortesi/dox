@@ -29,6 +29,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "doxdemo"
+version = "0.1.0"
+dependencies = [
+ "dox",
+ "serde",
+]
+
+[[package]]
 name = "indoc"
 version = "2.0.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"

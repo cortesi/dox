@@ -10,6 +10,6 @@ keywords = ["documentation", "docs"]
 
 [workspace]
 resolver = "2"
-members = ["crates/*", "tests"]
+members = ["crates/*", "tests", "examples/*"]
 
 
