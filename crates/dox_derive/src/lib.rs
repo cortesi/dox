@@ -201,7 +201,7 @@ pub fn dox_derive(input: TokenStream) -> TokenStream {
             let fields = match &data_struct.fields {
                 Fields::Named(FieldsNamed { named, .. }) => named,
                 _ => {
-                    return syn::Error::new_spanned(&input, "Only named fields are supported")
+                    return syn::Error::new_spanned(&input, "dox: only named fields are supported")
                         .to_compile_error()
                         .into()
                 }
@@ -241,8 +241,11 @@ pub fn dox_derive(input: TokenStream) -> TokenStream {
                 .iter()
                 .map(|v| {
                     if !v.fields.is_empty() {
-                        return syn::Error::new_spanned(v, "Only primitive enums are supported")
-                            .to_compile_error();
+                        return syn::Error::new_spanned(
+                            v,
+                            "dox: only primitive enums are supported",
+                        )
+                        .to_compile_error();
                     }
                     process_enum_variant(v, &rename_all)
                 })
@@ -261,7 +264,7 @@ pub fn dox_derive(input: TokenStream) -> TokenStream {
             }
         }
         _ => {
-            return syn::Error::new_spanned(&input, "Only structs and enums are supported")
+            return syn::Error::new_spanned(&input, "dox: only structs and enums are supported")
                 .to_compile_error()
                 .into()
         }
