@@ -75,6 +75,16 @@ enum ScreamingSnakeCaseEnum {
     VariantThree,
 }
 
+/// This is a struct with a skipped field
+#[derive(Dox, Serialize)]
+struct SkippedFieldStruct {
+    /// This field is not skipped
+    not_skipped: String,
+    /// This field is skipped
+    #[serde(skip)]
+    skipped: String,
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -216,5 +226,21 @@ mod tests {
         });
 
         assert_eq!(ScreamingSnakeCaseEnum::dox(), expected);
+    }
+
+    #[test]
+    fn test_skipped_field() {
+        let expected = Field::Container(Container {
+            name: "SkippedFieldStruct".to_string(),
+            type_name: "SkippedFieldStruct".to_string(),
+            fields: vec![Field::Primitive(Primitive {
+                name: "not_skipped".to_string(),
+                typ: Typ::String,
+                doc: "This field is not skipped".to_string(),
+            })],
+            doc: "This is a struct with a skipped field".to_string(),
+        });
+
+        assert_eq!(SkippedFieldStruct::dox(), expected);
     }
 }

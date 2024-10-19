@@ -90,6 +90,35 @@ fn extract_serde_rename_all(attrs: &[Attribute]) -> Option<String> {
     })
 }
 
+fn extract_serde_skip(attrs: &[Attribute]) -> bool {
+    attrs.iter().any(|attr| {
+        if attr.path().is_ident("serde") {
+            attr.parse_args_with(|input: syn::parse::ParseStream| {
+                while !input.is_empty() {
+                    let meta: syn::Meta = input.parse().unwrap_or_else(|_| {
+                        syn::Meta::Path(syn::Path::from(syn::Ident::new(
+                            "",
+                            proc_macro2::Span::call_site(),
+                        )))
+                    });
+                    if let syn::Meta::Path(path) = meta {
+                        if path.is_ident("skip") {
+                            return Ok(true);
+                        }
+                    }
+                    if !input.is_empty() {
+                        let _ = input.parse::<syn::Token![,]>();
+                    }
+                }
+                Ok(false)
+            })
+            .unwrap_or(false)
+        } else {
+            false
+        }
+    })
+}
+
 fn rename_field(name: &str, rename_rule: &str) -> String {
     if name.is_empty() {
         return String::new();
@@ -138,6 +167,10 @@ fn rename_field(name: &str, rename_rule: &str) -> String {
 }
 
 fn process_field(field: &syn::Field, rename_all: &Option<String>) -> proc_macro2::TokenStream {
+    if extract_serde_skip(&field.attrs) {
+        return quote! {};
+    }
+
     let name = field.ident.as_ref().unwrap();
     let docs = extract_doc_comments(&field.attrs);
     let ty = &field.ty;
@@ -321,6 +354,27 @@ mod tests {
             struct Test;
         };
         assert_eq!(extract_serde_rename_all(&item.attrs), None);
+    }
+
+    #[test]
+    fn test_extract_serde_skip() {
+        let item: syn::ItemStruct = parse_quote! {
+            #[serde(skip)]
+            struct Test;
+        };
+        assert!(extract_serde_skip(&item.attrs));
+
+        let item: syn::ItemStruct = parse_quote! {
+            #[serde(rename = "test")]
+            struct Test;
+        };
+        assert!(!extract_serde_skip(&item.attrs));
+
+        let item: syn::ItemStruct = parse_quote! {
+            #[derive(Debug)]
+            struct Test;
+        };
+        assert!(!extract_serde_skip(&item.attrs));
     }
 
     #[test]
