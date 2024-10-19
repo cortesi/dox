@@ -2,6 +2,7 @@ pub mod render;
 
 pub use dox_derive::Dox;
 use std::fmt;
+use std::path::PathBuf;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Typ {
@@ -22,6 +23,7 @@ pub enum Typ {
     Bool,
     Char,
     String,
+    PathBuf,
     Vec(Box<Typ>),
 }
 
@@ -45,6 +47,7 @@ impl fmt::Display for Typ {
             Typ::Bool => write!(f, "bool"),
             Typ::Char => write!(f, "char"),
             Typ::String => write!(f, "String"),
+            Typ::PathBuf => write!(f, "PathBuf"),
             Typ::Vec(inner) => write!(f, "Vec<{}>", inner),
         }
     }
@@ -132,6 +135,16 @@ impl Dox for String {
         Field::Primitive(Primitive {
             name: String::new(),
             typ: Typ::String,
+            doc: String::new(),
+        })
+    }
+}
+
+impl Dox for PathBuf {
+    fn dox() -> Field {
+        Field::Primitive(Primitive {
+            name: String::new(),
+            typ: Typ::PathBuf,
             doc: String::new(),
         })
     }
